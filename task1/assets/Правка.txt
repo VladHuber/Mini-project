@@ -1,0 +1,125 @@
+1. Странное использование HashMap для одной пары
+
+Вот это:
+
+let log: HashMap<&str, &str> =
+    item.split_once(" ").into_iter().collect();
+
+работает, но выглядит очень необычно.
+
+Если строка:
+
+ERROR Database timeout
+
+то split_once() возвращает:
+
+Some(("ERROR", "Database timeout"))
+
+То есть тебе не нужен HashMap.
+
+Проще:
+
+if let Some((level, message)) = item.split_once(' ') {
+    *stats.entry(level.to_string()).or_insert(0) += 1;
+
+    if level == "ERROR" {
+        *errors.entry(message.to_string()).or_insert(0) += 1;
+    }
+}
+
+Это будет более идиоматично.
+
+2. Ошибка в поиске самой частой ошибки
+
+Сейчас:
+
+match errors.iter().max()
+
+ищет максимум по ключу, а не по количеству.
+
+Например:
+
+{
+    "Database timeout": 10,
+    "Payment failed": 2
+}
+
+может вернуть не то, что ты ожидаешь.
+
+Нужно:
+
+errors.iter().max_by_key(|(_, count)| *count)
+
+Тогда:
+
+match errors.iter().max_by_key(|(_, count)| *count) {
+    Some((message, count)) => {
+        println!("Самая частая ошибка:");
+        println!("{} ({})", message, count);
+    }
+    None => println!("Ошибок нет"),
+}
+3. Потеряешь сообщения с несколькими пробелами
+
+Если лог выглядит так:
+
+ERROR Database timeout connection pool exhausted
+
+то:
+
+split_once(' ')
+
+отработает отлично:
+
+ERROR
+Database timeout connection pool exhausted
+
+что как раз нужно.
+
+Тут всё хорошо.
+
+4. Лишние String
+
+Сейчас ты делаешь много:
+
+key.to_string()
+val.to_string()
+
+Для учебного проекта нормально.
+
+Но позже можно будет подумать:
+
+HashMap<&str, u32>
+
+если строки живут достаточно долго.
+
+Пока не трогай это — начнёшь бороться с lifetime раньше времени.
+
+5. Я бы добавил ещё одну статистику
+
+Например:
+
+INFO: 15
+ERROR: 7
+WARNING: 2
+
+Всего записей: 24
+
+Для этого:
+
+let total_logs = contents.lines().count();
+Что мне нравится в этом коде
+
+Самое важное:
+
+Ты уже начал писать код примерно такого уровня:
+
+прочитал файл
+↓
+распарсил строки
+↓
+агрегировал данные
+↓
+вывел статистику
+
+Это гораздо ближе к реальной задаче, чем очередной калькулятор.

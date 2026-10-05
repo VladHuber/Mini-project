@@ -1,0 +1,13 @@
+# Rust build artifacts (matches target/ in every task crate)
+target/
+**/target/
+
+# Local data files with absolute paths / machine-specific output
+*.log.bak
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/

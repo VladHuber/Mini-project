@@ -1,0 +1,10 @@
+[
+    {
+        "name": "serde",
+        "version": "1.0.228"
+    },
+    {
+        "name": "tokio",
+        "version": "1.47.0"
+    }
+]
